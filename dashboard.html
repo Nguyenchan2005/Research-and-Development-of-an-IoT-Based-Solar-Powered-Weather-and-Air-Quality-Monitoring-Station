@@ -5,95 +5,550 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Giám Sát Không Khí - Simon House</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; text-align: center; padding: 20px; }
-        h1 { color: #333; margin-bottom: 5px; }
-        
-        /* Trạng thái kết nối */
-        #status { font-size: 14px; font-weight: bold; color: orange; margin-bottom: 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* Hộp cảnh báo lớn */
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Weather Sidebar */
+        .weather-sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            height: fit-content;
+        }
+
+        .weather-sidebar h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .weather-current {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .weather-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .weather-temp {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .weather-desc {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .weather-location {
+            font-size: 0.85em;
+            color: #bdc3c7;
+        }
+
+        .weather-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .weather-detail-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .weather-detail-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .weather-detail-value {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .weather-forecast {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .forecast-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .forecast-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 0.85em;
+        }
+
+        .forecast-time {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .forecast-temp {
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .status {
+            font-size: 1em;
+            font-weight: 600;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Greeting Box */
+        .greeting-box {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 5px solid #667eea;
+        }
+
+        .greeting-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .greeting-text {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Alert Box */
         #alert-box {
-            background-color: #95a5a6; color: white; padding: 20px;
-            border-radius: 15px; font-size: 1.5em; font-weight: bold;
-            margin: 0 auto 30px auto; max-width: 600px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 5px solid #95a5a6;
+            color: #333;
+            transition: all 0.3s ease;
         }
 
-        /* Lưới hiển thị 5 thông số */
-        .grid-container {
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px; max-width: 800px; margin: 0 auto;
+        .alert-box.warning {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe6e6 100%);
+            border-left-color: #ff9800;
+            color: #d84315;
         }
 
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card h3 { margin: 0; font-size: 1em; color: #7f8c8d; }
-        .value { font-size: 2em; font-weight: bold; color: #2c3e50; margin: 10px 0; }
-        .unit { font-size: 0.9em; color: #bdc3c7; }
-        
-        /* Hiệu ứng cảnh báo */
-        .danger-mode { background-color: #e74c3c !important; animation: pulse 1s infinite; }
-        .safe-mode { background-color: #2ecc71 !important; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .alert-box.danger {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left-color: #e74c3c;
+            color: #c62828;
+            animation: pulse 1.5s infinite;
+        }
+
+        .alert-box.safe {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left-color: #2ecc71;
+            color: #2e7d32;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+
+        .metric-card h3 {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .unit {
+            font-size: 0.85em;
+            color: #bdc3c7;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .chart-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        #tempChart {
+            max-height: 300px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>📡 GIÁM SÁT KHÔNG KHÍ</h1>
-    <div id="status">🟡 Đang kết nối HiveMQ Cloud...</div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 GIÁM SÁT KHÔNG KHÍ</h1>
+            <div class="status" id="status">🟡 Đang kết nối...</div>
+        </div>
 
-    <div id="alert-box">ĐANG CHỜ DỮ LIỆU...</div>
+        <!-- Greeting Box -->
+        <div class="greeting-box">
+            <div class="greeting-icon" id="greetingIcon">👋</div>
+            <div class="greeting-text" id="greetingText">Chào bạn! Đang tải dữ liệu...</div>
+        </div>
 
-    <div class="grid-container">
-        <div class="card">
-            <h3>Nhiệt độ</h3>
-            <div class="value"><span id="temp">--</span></div>
-            <div class="unit">°C</div>
+        <!-- Alert Box -->
+        <div id="alert-box" class="alert-box">ĐANG CHỜ DỮ LIỆU...</div>
+
+        <div class="main-content">
+            <div>
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>🌡️ Nhiệt độ</h3>
+                <div class="value"><span id="temp">--</span>°C</div>
+                <div class="unit">Celsius</div>
+            </div>
+            <div class="metric-card">
+                <h3>💧 Độ ẩm</h3>
+                <div class="value"><span id="hum">--</span>%</div>
+                <div class="unit">Độ ẩm</div>
+            </div>
+            <div class="metric-card">
+                <h3>📈 AQI</h3>
+                <div class="value"><span id="aqi">--</span></div>
+                <div class="unit">Index</div>
+            </div>
+            <div class="metric-card">
+                <h3>⚙️ eCO2</h3>
+                <div class="value"><span id="eco2">--</span> </div>
+                <div class="unit">ppm</div>
+            </div>
+            <div class="metric-card">
+                <h3>🔬 TVOC</h3>
+                <div class="value"><span id="tvoc">--</span></div>
+                <div class="unit">ppb</div>
+            </div>
         </div>
-        <div class="card">
-            <h3>Độ ẩm</h3>
-            <div class="value"><span id="hum">--</span></div>
-            <div class="unit">%</div>
+
+        <!-- Chart Section -->
+        <div class="chart-section">
+            <h2>📉 Biểu đồ Nhiệt độ</h2>
+            <canvas id="tempChart"></canvas>
         </div>
-        <div class="card">
-            <h3>AQI</h3>
-            <div class="value"><span id="aqi">--</span></div>
-            <div class="unit">Index</div>
-        </div>
-        <div class="card">
-            <h3>eCO2</h3>
-            <div class="value"><span id="eco2">--</span></div>
-            <div class="unit">ppm</div>
-        </div>
-        <div class="card">
-            <h3>TVOC</h3>
-            <div class="value"><span id="tvoc">--</span></div>
-            <div class="unit">ppb</div>
+            </div>
+
+            <!-- Weather Sidebar -->
+            <div class="weather-sidebar">
+                <h3>🌍 Dự Báo Thời Tiết</h3>
+                
+                <div class="weather-current">
+                    <div class="weather-icon" id="weatherIcon">⛅</div>
+                    <div class="weather-temp"><span id="weatherTemp">--</span>°C</div>
+                    <div class="weather-desc" id="weatherDesc">Đang tải...</div>
+                    <div class="weather-location" id="weatherLocation">--</div>
+                </div>
+
+                <div class="weather-details">
+                    <div class="weather-detail-item">
+                        <span class="weather-detail-label">💨 Gió</span>
+                        <span class="weather-detail-value" id="weatherWind">--</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="weather-detail-label">💧 Độ Ẩm</span>
+                        <span class="weather-detail-value" id="weatherHumidity">--</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="weather-detail-label">🔽 Áp Suất</span>
+                        <span class="weather-detail-value" id="weatherPressure">--</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="weather-detail-label">👁️ Tầm Nhìn</span>
+                        <span class="weather-detail-value" id="weatherVisibility">--</span>
+                    </div>
+                </div>
+
+                <div class="weather-forecast">
+                    <div class="forecast-title">📅 Dự báo 24h</div>
+                    <div id="forecastContainer"></div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Footer -->
+    <div class="footer">
+        <p>🏠 Simon House - Hệ Thống Giám Sát Không Khí Thông Minh | Cập nhật mỗi 5 giây</p>
+    </div>
+
     <script>
-        // --- 1. CẤU HÌNH HIVEMQ CLOUD ---
+        // === BIẾN TOÀN CỤC ===
+        var tempHistory = [];
+        var timeLabels = [];
+        var maxDataPoints = 30;
+        var currentTemp = 0, currentHum = 0, currentAQI = 0;
+        var tempChart = null;
+        var userLocation = { lat: 21.0285, lon: 105.8542 }; // Hà Nội mặc định
+
+        // === LẤY VỊ TRÍ NGƯỜI DÙNG ===
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        };
+                        fetchWeather();
+                    },
+                    function(error) {
+                        console.log("Không lấy được vị trí, dùng Hà Nội");
+                        fetchWeather();
+                    }
+                );
+            } else {
+                fetchWeather();
+            }
+        }
+
+        // === GỌI API THỜI TIẾT ===
+        function fetchWeather() {
+            var url = `https://api.open-meteo.com/v1/forecast?latitude=${userLocation.lat}&longitude=${userLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,visibility&hourly=temperature_2m,weather_code&timezone=Asia/Bangkok`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => updateWeatherUI(data))
+                .catch(error => console.log("Lỗi lấy thời tiết:", error));
+        }
+
+        // === CẬP NHẬT GIAO DIỆN THỜI TIẾT ===
+        function updateWeatherUI(data) {
+            var current = data.current;
+            var hourly = data.hourly;
+
+            // Cập nhật thời tiết hiện tại
+            var weatherCode = current.weather_code;
+            var temp = Math.round(current.temperature_2m);
+            var humidity = current.relative_humidity_2m;
+            var windSpeed = Math.round(current.wind_speed_10m);
+            var pressure = Math.round(current.pressure_msl);
+            var visibility = Math.round(current.visibility / 1000);
+
+            document.getElementById("weatherTemp").innerText = temp;
+            document.getElementById("weatherDesc").innerText = getWeatherDescription(weatherCode);
+            document.getElementById("weatherIcon").innerText = getWeatherIcon(weatherCode);
+            document.getElementById("weatherWind").innerText = windSpeed + " km/h";
+            document.getElementById("weatherHumidity").innerText = humidity + "%";
+            document.getElementById("weatherPressure").innerText = pressure + " mb";
+            document.getElementById("weatherVisibility").innerText = visibility + " km";
+
+            // Lấy tên thành phố (đơn giản)
+            var cityName = userLocation.lat > 20 ? "Hà Nội" : "TP.HCM";
+            document.getElementById("weatherLocation").innerText = cityName;
+
+            // Cập nhật dự báo 24 giờ
+            updateForecast(hourly, data.current_time);
+        }
+
+        // === CẬP NHẬT FORECAST ===
+        function updateForecast(hourly, currentTime) {
+            var container = document.getElementById("forecastContainer");
+            container.innerHTML = "";
+
+            // Lấy 8 điểm dự báo (mỗi 3 giờ)
+            for (var i = 0; i < Math.min(8, hourly.time.length); i += 3) {
+                var time = hourly.time[i];
+                var temp = hourly.temperature_2m[i];
+                var weatherCode = hourly.weather_code[i];
+                
+                var hour = new Date(time).getHours().toString().padStart(2, '0') + ':00';
+                
+                var forecastDiv = document.createElement("div");
+                forecastDiv.className = "forecast-item";
+                forecastDiv.innerHTML = `
+                    <div class="forecast-time">${hour}</div>
+                    <div>${getWeatherIcon(weatherCode)}</div>
+                    <div class="forecast-temp">${Math.round(temp)}°C</div>
+                `;
+                container.appendChild(forecastDiv);
+            }
+        }
+
+        // === HÀM CHUYỂN ĐỔI WEATHER CODE ===
+        function getWeatherIcon(code) {
+            if (code === 0) return "☀️";
+            if (code === 1 || code === 2) return "🌤️";
+            if (code === 3) return "☁️";
+            if (code === 45 || code === 48) return "🌫️";
+            if (code >= 51 && code <= 67) return "🌧️";
+            if (code >= 71 && code <= 77 || code === 85 || code === 86) return "❄️";
+            if (code >= 80 && code <= 82) return "⛈️";
+            if (code === 95 || code === 96 || code === 99) return "⛈️";
+            return "🌥️";
+        }
+
+        function getWeatherDescription(code) {
+            if (code === 0) return "Trời tươi sáng";
+            if (code === 1 || code === 2) return "Phần lớn quang đẹp";
+            if (code === 3) return "Có mây";
+            if (code === 45 || code === 48) return "Sương mù";
+            if (code >= 51 && code <= 67) return "Có mưa nhỏ";
+            if (code >= 71 && code <= 77 || code === 85 || code === 86) return "Tuyết";
+            if (code >= 80 && code <= 82) return "Có mưa rào";
+            if (code === 95 || code === 96 || code === 99) return "Bão tố";
+            return "Thay đổi";
+        }
+
+        // === CẤU HÌNH HIVEMQ CLOUD ===
         var mqtt_server = "e35ff2a8c16f4c60981704de63982340.s1.eu.hivemq.cloud"; 
-        var mqtt_port = 8884; // Cổng Web Secure (WSS)
+        var mqtt_port = 8884;
         
         var mqtt_user = "Huflit"; 
-        var mqtt_pass = "Huflit123456"; // Mật khẩu của bạn
+        var mqtt_pass = "Huflit123456";
 
-        // Tạo ID ngẫu nhiên cho Client
         var client = new Paho.MQTT.Client(mqtt_server, mqtt_port, "Web_" + new Date().getTime());
 
-        // Cài đặt hàm xử lý sự kiện
         client.onConnectionLost = onConnectionLost;
         client.onMessageArrived = onMessageArrived;
 
-        // Cấu hình kết nối
         var options = {
-            useSSL: true,         // Bắt buộc
-            userName: mqtt_user,  // Bắt buộc
-            password: mqtt_pass,  // Bắt buộc
+            useSSL: true,
+            userName: mqtt_user,
+            password: mqtt_pass,
             onSuccess: onConnect,
             onFailure: onFail
         };
@@ -101,27 +556,141 @@
         console.log("Đang kết nối đến HiveMQ...");
         client.connect(options);
 
-        // --- CÁC HÀM XỬ LÝ ---
+        // === KHỞI TẠO BIỂU ĐỒ ===
+        function initChart() {
+            var ctx = document.getElementById('tempChart').getContext('2d');
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Nhiệt độ (°C)',
+                        data: tempHistory,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { font: { size: 11 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // === THÊM DỮ LIỆU VÀO BIỂU ĐỒ ===
+        function addTempData(temp) {
+            var now = new Date();
+            var timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                         now.getMinutes().toString().padStart(2, '0');
+            
+            tempHistory.push(parseFloat(temp));
+            timeLabels.push(timeStr);
+
+            if (tempHistory.length > maxDataPoints) {
+                tempHistory.shift();
+                timeLabels.shift();
+            }
+
+            if (tempChart) {
+                tempChart.data.labels = timeLabels;
+                tempChart.data.datasets[0].data = tempHistory;
+                tempChart.update('none');
+            }
+        }
+
+        // === CẬP NHẬT LỜI CHÀO HỎI ===
+        function updateGreeting() {
+            var greeting = document.getElementById('greetingText');
+            var icon = document.getElementById('greetingIcon');
+            var hour = new Date().getHours();
+            var message = '';
+
+            if (currentTemp === 0 && currentHum === 0) {
+                message = 'Chào bạn! Hệ thống đang làm việc...';
+                icon.innerText = '👋';
+            }
+            // Dựa vào nhiệt độ và độ ẩm để dự báo thời tiết
+            else if (currentHum > 70 && currentTemp < 20) {
+                message = '🌧️ Chào bạn! Dự báo hôm nay trời sẽ có mưa. Hãy nhớ mang theo dù và áo mưa nhé!';
+                icon.innerText = '🌧️';
+            }
+            else if (currentHum > 75) {
+                message = '💧 Chào bạn! Độ ẩm khá cao hôm nay. Nhớ uống đủ nước nhé!';
+                icon.innerText = '💧';
+            }
+            else if (currentTemp > 28 && currentHum < 60) {
+                message = '☀️ Hi bạn! Trời nắng nóng hôm nay. Hãy nhớ mang áo khoát chống nắng nhé!';
+                icon.innerText = '☀️';
+            }
+            else if (currentTemp > 25 && currentHum < 50) {
+                message = '🌞 Xin chào! Thời tiết rất đẹp. Hãy bảo vệ da bằng kem chống nắng nhé!';
+                icon.innerText = '🌞';
+            }
+            else if (currentTemp < 15) {
+                message = '❄️ Chào bạn! Hôm nay trời lạnh. Nhớ mặc thêm áo ấm nhé!';
+                icon.innerText = '❄️';
+            }
+            else if (currentAQI >= 3) {
+                message = '⚠️ Chào bạn! Chất lượng không khí không tốt ngay bây giờ. Nên giảm hoạt động ngoài trời!';
+                icon.innerText = '⚠️';
+            }
+            else {
+                if (hour >= 5 && hour < 12) message = '🌅 Chào buổi sáng! Ngày mới tốt lành!';
+                else if (hour >= 12 && hour < 17) message = '☀️ Chào buổi chiều bạn! Hãy nghỉ ngơi đủ đầu!';
+                else if (hour >= 17 && hour < 21) message = '🌆 Chào buổi tối! Đây là lúc thư giãn!';
+                else message = '🌙 Buổi tối vui vẻ! Hãy có giấc ngủ sâu!';
+                icon.innerText = ['🌅', '☀️', '🌆', '🌙'][
+                    hour >= 5 && hour < 12 ? 0 : 
+                    hour >= 12 && hour < 17 ? 1 : 
+                    hour >= 17 && hour < 21 ? 2 : 3
+                ];
+            }
+
+            greeting.innerText = message;
+        }
+
+        // === HÀM MQTT ===
         function onConnect() {
             console.log("✅ KẾT NỐI THÀNH CÔNG!");
             document.getElementById("status").innerText = "🟢 Đã kết nối HiveMQ Cloud";
-            document.getElementById("status").style.color = "green";
-            
-            // Đăng ký nhận tin từ tất cả topic
+            initChart();
             client.subscribe("simon_house/air/#");
         }
 
         function onFail(responseObject) {
             console.log("❌ Lỗi kết nối: " + responseObject.errorMessage);
-            document.getElementById("status").innerText = "🔴 Lỗi kết nối: " + responseObject.errorMessage;
-            document.getElementById("status").style.color = "red";
+            document.getElementById("status").innerText = "🔴 Lỗi kết nối";
         }
 
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0) {
-                console.log("Mất kết nối: " + responseObject.errorMessage);
+                console.log("Mất kết nối");
                 document.getElementById("status").innerText = "🟡 Mất kết nối...";
-                document.getElementById("status").style.color = "orange";
             }
         }
 
@@ -130,14 +699,21 @@
             var msg = message.payloadString;
             console.log("Nhận [" + topic + "]: " + msg);
 
-            // Cập nhật lên giao diện
-            if (topic.includes("temp")) document.getElementById("temp").innerText = msg;
-            else if (topic.includes("hum")) document.getElementById("hum").innerText = msg;
+            if (topic.includes("temp")) {
+                document.getElementById("temp").innerText = msg;
+                currentTemp = parseFloat(msg);
+                addTempData(msg);
+                updateGreeting();
+            }
+            else if (topic.includes("hum")) {
+                document.getElementById("hum").innerText = msg;
+                currentHum = parseFloat(msg);
+                updateGreeting();
+            }
             else if (topic.includes("aqi")) {
                 document.getElementById("aqi").innerText = msg;
-                // Đổi màu số AQI nếu cao
-                var val = parseInt(msg);
-                document.getElementById("aqi").style.color = (val >= 3) ? "red" : "#2c3e50";
+                currentAQI = parseInt(msg);
+                updateGreeting();
             }
             else if (topic.includes("eco2")) document.getElementById("eco2").innerText = msg;
             else if (topic.includes("tvoc")) document.getElementById("tvoc").innerText = msg;
@@ -148,16 +724,20 @@
             var box = document.getElementById("alert-box");
             box.innerText = msg;
             
-            // Logic đổi màu nền cảnh báo
-            if (msg.includes("CANH BAO") || msg.includes("O NHIEM")) {
-                box.className = "danger-mode"; // Chớp đỏ
-            } else if (msg.includes("An toan") || msg.includes("khoi dong")) {
-                box.className = "safe-mode";   // Xanh lá
+            if (msg.includes("CANH BAO") || msg.includes("O NHIEM") || msg.includes("DANGER")) {
+                box.className = "alert-box danger";
+            } else if (msg.includes("An toan") || msg.includes("SAFE")) {
+                box.className = "alert-box safe";
             } else {
-                box.className = "";
-                box.style.backgroundColor = "#95a5a6"; // Xám mặc định
+                box.className = "alert-box warning";
             }
         }
+
+        // === CẬP NHẬT LỜI CHÀO BAN ĐẦU ===
+        updateGreeting();
+        
+        // === KHỞI ĐỘNG LẤY THỜI TIẾT ===
+        getUserLocation();
     </script>
 </body>
 </html>

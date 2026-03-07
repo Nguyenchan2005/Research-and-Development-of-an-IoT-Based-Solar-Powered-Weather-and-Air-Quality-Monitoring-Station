@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "ESP32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Users/ADMIN/AppData/Local/Arduino15/packages/esp32/hardware/esp32/3.3.5/cores/esp32",
+                "C:/Users/ADMIN/AppData/Local/Arduino15/packages/esp32/hardware/esp32/3.3.5/libraries",
+                "C:/Users/ADMIN/AppData/Local/Arduino15/packages/esp32/hardware/esp32/3.3.5/variants/esp32",
+                "C:/Users/ADMIN/AppData/Local/Arduino15/libraries"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

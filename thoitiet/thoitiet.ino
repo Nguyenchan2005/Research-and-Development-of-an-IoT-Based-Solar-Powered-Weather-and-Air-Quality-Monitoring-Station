@@ -2,7 +2,7 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 #include <Adafruit_AHTX0.h>
-#include "ScioSense_ENS160.h"
+#include <ScioSense_ENS160.h>
 
 // --- 1. CẤU HÌNH WIFI & MQTT ---
 const char* ssid = "Huflit-CB-NV";
