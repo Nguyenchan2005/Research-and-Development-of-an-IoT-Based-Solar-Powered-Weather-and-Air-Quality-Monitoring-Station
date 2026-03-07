@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Giám Sát Không Khí - Simon House</title>
+    <!-- fonts & icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -14,11 +16,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #5a6bdc 0%, #7d5cc8 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: #2e3a59;
         }
 
         .container {
@@ -141,6 +143,10 @@
             .main-content {
                 grid-template-columns: 1fr;
             }
+            /* allow metrics to wrap on smaller viewports */
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
         }
 
         /* Header */
@@ -152,29 +158,48 @@
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
         }
 
         .header .status {
-            font-size: 1em;
-            font-weight: 600;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
+            font-size: 0.9em;
+            font-weight: 500;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.15);
             border-radius: 20px;
             display: inline-block;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
         }
 
         /* Greeting Box */
         .greeting-box {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-left: 5px solid #667eea;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid #4a6cf7;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .greeting-box .greeting-text {
+            font-size: 1em;
+            color: #3a3f5c;
+        }
+
+        .greeting-box .greeting-icon {
+            font-size: 1.5em;
+        }
+
+        .greeting-box .greeting-text {
+            font-size: 1em;
+            font-weight: 600;
         }
 
         .greeting-icon {
@@ -193,14 +218,19 @@
         #alert-box {
             background: white;
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            font-size: 1.2em;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 1em;
             font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
             border-left: 5px solid #95a5a6;
             color: #333;
             transition: all 0.3s ease;
+        }
+        /* left column wrapper */
+        .content-left {
+            display: flex;
+            flex-direction: column;
         }
 
         .alert-box.warning {
@@ -231,51 +261,52 @@
         /* Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            /* force five cards per row on larger screens */
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-bottom: 30px;
         }
 
         .metric-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 18px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
         .metric-card h3 {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 0.95em;
+            color: #4a5476;
+            margin-bottom: 8px;
+            text-transform: none;
+            letter-spacing: 0.5px;
         }
 
         .metric-card .value {
-            font-size: 2.2em;
+            font-size: 2em;
             font-weight: 700;
-            color: #667eea;
-            margin-bottom: 8px;
+            color: #4a6cf7;
+            margin-bottom: 4px;
         }
 
         .metric-card .unit {
-            font-size: 0.85em;
-            color: #bdc3c7;
+            font-size: 0.8em;
+            color: #95a1c3;
         }
 
         /* Chart Section */
         .chart-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
 
@@ -292,10 +323,10 @@
         /* Footer */
         .footer {
             text-align: center;
-            color: white;
-            padding: 20px;
-            font-size: 0.9em;
-            opacity: 0.8;
+            color: #f0f0f0;
+            padding: 12px;
+            font-size: 0.8em;
+            opacity: 0.7;
         }
 
         /* Responsive */
@@ -321,45 +352,46 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📊 GIÁM SÁT KHÔNG KHÍ</h1>
+            <h1>GIÁM SÁT KHÔNG KHÍ</h1>
             <div class="status" id="status">🟡 Đang kết nối...</div>
         </div>
 
-        <!-- Greeting Box -->
-        <div class="greeting-box">
-            <div class="greeting-icon" id="greetingIcon">👋</div>
-            <div class="greeting-text" id="greetingText">Chào bạn! Đang tải dữ liệu...</div>
-        </div>
-
-        <!-- Alert Box -->
-        <div id="alert-box" class="alert-box">ĐANG CHỜ DỮ LIỆU...</div>
-
+        <!-- Main content row containing greeting/alert/metrics and weather -->
         <div class="main-content">
-            <div>
+            <div class="content-left">
+                <!-- Greeting Box -->
+                <div class="greeting-box">
+                    <div class="greeting-icon" id="greetingIcon">👋</div>
+                    <div class="greeting-text" id="greetingText">Chào bạn! Đang tải dữ liệu...</div>
+                </div>
+
+                <!-- Alert Box -->
+                <div id="alert-box" class="alert-box">ĐANG CHỜ DỮ LIỆU...</div>
+
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
             <div class="metric-card">
-                <h3>🌡️ Nhiệt độ</h3>
+                <h3>Nhiệt độ</h3>
                 <div class="value"><span id="temp">--</span>°C</div>
                 <div class="unit">Celsius</div>
             </div>
             <div class="metric-card">
-                <h3>💧 Độ ẩm</h3>
+                <h3>Độ ẩm</h3>
                 <div class="value"><span id="hum">--</span>%</div>
                 <div class="unit">Độ ẩm</div>
             </div>
             <div class="metric-card">
-                <h3>📈 AQI</h3>
+                <h3>AQI</h3>
                 <div class="value"><span id="aqi">--</span></div>
                 <div class="unit">Index</div>
             </div>
             <div class="metric-card">
-                <h3>⚙️ eCO2</h3>
+                <h3>eCO2</h3>
                 <div class="value"><span id="eco2">--</span> </div>
                 <div class="unit">ppm</div>
             </div>
             <div class="metric-card">
-                <h3>🔬 TVOC</h3>
+                <h3>TVOC</h3>
                 <div class="value"><span id="tvoc">--</span></div>
                 <div class="unit">ppb</div>
             </div>
@@ -374,7 +406,7 @@
 
             <!-- Weather Sidebar -->
             <div class="weather-sidebar">
-                <h3>🌍 Dự Báo Thời Tiết</h3>
+                <h3>Dự Báo Thời Tiết</h3>
                 
                 <div class="weather-current">
                     <div class="weather-icon" id="weatherIcon">⛅</div>
