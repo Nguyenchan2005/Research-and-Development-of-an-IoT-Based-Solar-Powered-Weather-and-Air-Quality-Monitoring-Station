@@ -117,11 +117,13 @@
         .status.warning .status-dot { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
 
         /* --- Dashboard Layout --- */
-        .dashboard-layout { display: grid; grid-template-columns: 2fr 1.1fr; gap: 24px; }
-        .left-panel { display: flex; flex-direction: column; gap: 24px; }
-
-        /* Banners */
-        .banner-group { display: flex; flex-direction: column; gap: 12px; }
+        .dashboard-layout {
+            display: grid; grid-template-columns: 2fr 1.1fr; gap: 24px;
+            grid-template-areas: "banners sidebar" "metrics sidebar";
+        }
+        .banner-group { grid-area: banners; display: flex; flex-direction: column; gap: 12px; }
+        .weather-sidebar { grid-area: sidebar; }
+        .left-panel-content { grid-area: metrics; display: flex; flex-direction: column; gap: 24px; }
         .banner {
             display: flex; align-items: center; gap: 16px; padding: 16px 20px;
             border-radius: var(--radius-md); font-weight: 600; box-shadow: var(--shadow-sm); transition: all 0.3s ease;
@@ -264,8 +266,9 @@
         /* Responsive */
         @media (max-width: 1024px) {
             .dashboard-layout { display: flex; flex-direction: column; }
-            .weather-sidebar { order: 1; position: static; }
-            .left-panel { order: 2; }
+            .banner-group { order: 1; }
+            .weather-sidebar { order: 2; position: static; }
+            .left-panel-content { order: 3; }
             .w-details-grid { grid-template-columns: repeat(4, 1fr); }
         }
         @media (max-width: 768px) {
@@ -298,17 +301,17 @@
         </header>
 
         <div class="dashboard-layout">
-            <!-- Left Panel -->
-            <div class="left-panel">
-                <!-- Banners -->
-                <div class="banner-group">
-                    <div class="banner greeting-banner">
-                        <div class="greeting-icon" id="greetingIcon">👋</div>
-                        <div class="greeting-text" id="greetingText">Hệ thống đang đồng bộ dữ liệu...</div>
-                    </div>
-                    <div id="alert-box" class="banner alert-banner">ĐANG CHỜ DỮ LIỆU...</div>
+            <!-- Banners -->
+            <div class="banner-group">
+                <div class="banner greeting-banner">
+                    <div class="greeting-icon" id="greetingIcon">👋</div>
+                    <div class="greeting-text" id="greetingText">Hệ thống đang đồng bộ dữ liệu...</div>
                 </div>
+                <div id="alert-box" class="banner alert-banner">ĐANG CHỜ DỮ LIỆU...</div>
+            </div>
 
+            <!-- Left content -->
+            <div class="left-panel-content">
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
                     <div class="metric-card">
@@ -801,12 +804,25 @@
         function updateForecast(hourly) {
             var container = document.getElementById("forecastContainer");
             container.innerHTML = "";
-            for (var i = 0; i < Math.min(8, hourly.time.length); i += 3) {
-                var time = hourly.time[i]; var temp = hourly.temperature_2m[i]; var code = hourly.weather_code[i];
-                var hour = new Date(time).getHours().toString().padStart(2, '0') + ':00';
-                var div = document.createElement("div"); div.className = "forecast-item";
-                div.innerHTML = `<div class="f-time">${hour}</div><div class="f-icon">${getWeatherIcon(code)}</div><div class="f-temp">${Math.round(temp)}°C</div>`;
-                container.appendChild(div);
+            var now = new Date();
+            var count = 0;
+            // Lấy 24 mốc thời gian tiếp theo (Mỗi tiếng 1 ô)
+            for (var i = 0; i < hourly.time.length; i++) {
+                var pTime = new Date(hourly.time[i]);
+                // Chỉ hiển thị từ giờ hiện tại trở đi
+                if (pTime >= now || (pTime.getHours() === now.getHours() && pTime.getDate() === now.getDate())) {
+                    if (count >= 24) break; // Hiển thị 24h kế tiếp
+                    
+                    var temp = hourly.temperature_2m[i]; 
+                    var code = hourly.weather_code[i];
+                    var hourStr = pTime.getHours().toString().padStart(2, '0') + ':00';
+                    var dayLabel = (pTime.getDate() !== now.getDate() && pTime.getHours() === 0) ? "Ngày mai" : hourStr;
+                    
+                    var div = document.createElement("div"); div.className = "forecast-item";
+                    div.innerHTML = `<div class="f-time" style="text-align:center">${dayLabel}</div><div class="f-icon" style="margin: 4px 0;">${getWeatherIcon(code)}</div><div class="f-temp">${Math.round(temp)}°C</div>`;
+                    container.appendChild(div);
+                    count++;
+                }
             }
         }
         function getWeatherIcon(code) {
