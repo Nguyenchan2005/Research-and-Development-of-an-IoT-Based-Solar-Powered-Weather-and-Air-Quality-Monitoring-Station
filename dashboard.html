@@ -462,7 +462,7 @@
         var aqiChartObj = null;
         var pm25ChartObj = null;
 
-        var userLocation = { lat: 10.7626, lon: 106.6601 }; // Hồ Chí Minh mặc định
+        var userLocation = { lat: 10.7766, lon: 106.6670 }; // Khu vực Cơ sở Sư Vạn Hạnh
 
         // === CĂN BẢN (DARK MODE) ===
         function toggleTheme() {
@@ -532,7 +532,7 @@
 
             document.getElementById("weatherDesc").innerText = getWeatherDescription(weatherCode);
             document.getElementById("weatherIcon").innerText = getWeatherIcon(weatherCode);
-            document.getElementById("weatherLocation").innerText = "TP. Hồ Chí Minh";
+            document.getElementById("weatherLocation").innerText = "Cơ sở Sư Vạn Hạnh";
 
             updateForecast(hourly); 
             updateGreeting();       
