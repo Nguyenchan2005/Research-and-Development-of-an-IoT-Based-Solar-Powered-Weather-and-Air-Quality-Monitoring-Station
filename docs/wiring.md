@@ -97,3 +97,11 @@ LM2596S Buck Converter (set to 5V output)
                   VIN (5V) ─── LM2596 output
                   PMS7003 VCC ─ LM2596 output (5V)
 ```
+
+---
+
+## Actual Wiring Inside Enclosure
+
+The image below shows the exploded layer structure of the sensor shield enclosure, illustrating how the shield layers stack around the sensors.
+
+<img src="images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">

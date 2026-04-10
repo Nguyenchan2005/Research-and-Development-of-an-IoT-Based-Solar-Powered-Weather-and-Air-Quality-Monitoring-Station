@@ -15,6 +15,7 @@
 
 - [System Architecture](#-system-architecture)
 - [Hardware Components](#-hardware-components)
+- [Enclosure & Physical Build](#-enclosure--physical-build)
 - [Getting Started](#-getting-started)
   - [Firmware](#firmware)
   - [Web Dashboard](#web-dashboard)
@@ -70,6 +71,18 @@ See [`docs/architecture.md`](docs/architecture.md) for a detailed description in
 | BMS 2S + LM2596 | Battery management & voltage regulation | — |
 
 Full specifications are in [`docs/hardware.md`](docs/hardware.md). Wiring diagrams are in [`docs/wiring.md`](docs/wiring.md).
+
+---
+
+## 📦 Enclosure & Physical Build
+
+The station is housed in a weatherproof sensor shield enclosure designed for outdoor deployment. The multi-layer structure allows airflow around the sensors while protecting them from direct sunlight and rain.
+
+<img src="docs/images/box_01.png" alt="Enclosure — exploded 3D view (perspective 1)" width="480">
+<img src="docs/images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">
+<img src="docs/images/box_05.png" alt="Enclosure — 3D model with cross-wind airflow illustration" width="480">
+
+See [`docs/hardware.md`](docs/hardware.md) for full enclosure photos and component placement details.
 
 ---
 

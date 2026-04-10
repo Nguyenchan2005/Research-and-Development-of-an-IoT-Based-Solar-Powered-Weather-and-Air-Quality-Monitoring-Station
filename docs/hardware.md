@@ -84,3 +84,15 @@
 - **Output voltage:** Adjustable 1.25V – 37V (set to 5V for this project)
 - **Maximum output current:** 3A
 - **Efficiency:** ~92% typical
+
+---
+
+## Enclosure Photos
+
+The sensor shield enclosure is a 3D-printed multi-layer structure that protects the sensors from direct sunlight and precipitation while allowing natural airflow.
+
+<img src="images/box_01.png" alt="Enclosure — exploded 3D view (perspective 1)" width="480">
+<img src="images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">
+<img src="images/box_03.png" alt="Enclosure — 3D model assembly view (perspective 1)" width="480">
+<img src="images/box_04.png" alt="Enclosure — 3D model assembly view (perspective 2)" width="480">
+<img src="images/box_05.png" alt="Enclosure — 3D model with cross-wind airflow illustration" width="480">

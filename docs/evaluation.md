@@ -71,6 +71,8 @@ Testing was performed outdoors with the 6V/6W solar panel under Ho Chi Minh City
 
 **Finding:** On a typical sunny day in Ho Chi Minh City (6–8 h of useful solar irradiance), the station can sustain continuous 24/7 operation. On consecutive overcast days, the battery provides approximately 17 hours of backup before requiring recharge.
 
+<img src="images/box_05.png" alt="Station enclosure deployed outdoors — 3D model with cross-wind airflow" width="600">
+
 ---
 
 ## 4. General Findings & Known Limitations
