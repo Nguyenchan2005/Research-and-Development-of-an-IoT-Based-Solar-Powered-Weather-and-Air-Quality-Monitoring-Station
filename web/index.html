@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar-Powered Weather &amp; Air Quality Station — Dashboard</title>
+    <!-- fonts & icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Light Theme Default */
+            --bg-body: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(0, 0, 0, 0.04);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            --radius-md: 16px;
+            --radius-lg: 24px;
+        }
+
+        body.dark-mode {
+            /* Dark Theme Overrides */
+            --bg-body: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-light: rgba(79, 70, 229, 0.2);
+            --border: rgba(255, 255, 255, 0.05);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px 16px;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; position: relative; }
+
+        /* --- Global Header --- */
+        .glass-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 16px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            transition: background 0.3s;
+        }
+        body.dark-mode .glass-header {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .header-title-wrapper { display: flex; align-items: center; gap: 12px; }
+
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .glass-header h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); line-height: 1.2; }
+        .glass-header .subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 40px; height: 40px; border-radius: 50%;
+            cursor: pointer; font-size: 18px; color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-sm); transition: 0.2s;
+        }
+        .theme-btn:hover { background: var(--primary-light); color: var(--primary); }
+
+        .status {
+            font-size: 0.85rem; font-weight: 600; padding: 8px 16px; border-radius: 40px;
+            display: flex; align-items: center; gap: 8px; background: var(--surface); box-shadow: var(--shadow-sm);
+        }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected .status-dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status.disconnected .status-dot { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        .status.warning .status-dot { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+
+        /* --- Dashboard Layout --- */
+        .dashboard-layout {
+            display: grid; grid-template-columns: 2fr 1.1fr; gap: 24px;
+            grid-template-areas: "banners sidebar" "metrics sidebar";
+        }
+        .banner-group { grid-area: banners; display: flex; flex-direction: column; gap: 12px; }
+        .weather-sidebar { grid-area: sidebar; }
+        .left-panel-content { grid-area: metrics; display: flex; flex-direction: column; gap: 24px; }
+        .banner {
+            display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+            border-radius: var(--radius-md); font-weight: 600; box-shadow: var(--shadow-sm); transition: all 0.3s ease;
+        }
+        .greeting-banner { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .greeting-icon { font-size: 28px; background: rgba(255, 255, 255, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .greeting-text { line-height: 1.4; font-size: 0.95rem; }
+
+        .alert-banner { background: var(--surface); color: var(--text-main); border-left: 6px solid var(--border); }
+        .alert-banner.safe { border-left-color: var(--success); background: #f0fdf4; color: #166534; }
+        .alert-banner.warning { border-left-color: var(--warning); background: #fffbeb; color: #92400e; }
+        .alert-banner.danger { border-left-color: var(--danger); background: #fef2f2; color: #991b1b; animation: pulseRed 2s infinite; }
+        
+        body.dark-mode .alert-banner.safe { background: rgba(22, 101, 52, 0.2); color: #4ade80; border-left-color: #4ade80;}
+        body.dark-mode .alert-banner.warning { background: rgba(146, 64, 14, 0.2); color: #facc15; border-left-color: #fbd38d;}
+        body.dark-mode .alert-banner.danger { background: rgba(153, 27, 27, 0.2); color: #f87171; border-left-color: #f87171;}
+
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* Tooltip */
+        .info-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%; background: var(--border); color: var(--text-muted);
+            font-size: 11px; font-weight: bold; cursor: help; margin-left: 6px; position: relative;
+        }
+        .info-btn:hover { background: var(--primary); color: white; }
+        
+        .info-btn .tooltip-text {
+            visibility: hidden; width: 220px; background-color: var(--text-main); color: var(--bg-body);
+            text-align: left; border-radius: 8px; padding: 10px; position: absolute; z-index: 100;
+            bottom: 150%; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-weight: 500;
+            opacity: 0; transition: opacity 0.3s; box-shadow: var(--shadow-md); pointer-events: none;
+            line-height: 1.4; white-space: normal;
+        }
+        .info-btn .tooltip-text::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: var(--text-main) transparent transparent transparent;
+        }
+        .info-btn:hover .tooltip-text { visibility: visible; opacity: 1; }
+        body.dark-mode .info-btn .tooltip-text { background-color: #334155; color: #f8fafc; }
+        body.dark-mode .info-btn .tooltip-text::after { border-color: #334155 transparent transparent transparent; }
+
+        /* Metrics */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+
+        .metric-card {
+            background: var(--surface); padding: 20px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+        .metric-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .metric-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        .ic-temp { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .ic-hum { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+        .ic-aqi { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .ic-eco2 { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .ic-tvoc { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+        .ic-pm25 { background: rgba(100, 116, 139, 0.15); color: #8ba2c4; }
+        .ic-uv { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+
+        .metric-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .metric-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; display: flex; align-items: baseline; gap: 4px; }
+        .metric-unit { font-size: 0.875rem; font-weight: 600; color: var(--text-muted); margin-top: -2px; }
+
+        /* Gauge Area */
+        .gauge-wrapper { position: relative; width: 100%; height: 90px; margin-top: 5px; display: flex; flex-direction: column; align-items: center;}
+        .gauge-canvas { width: 100% !important; height: 100% !important; }
+        .gauge-text-val { position: absolute; bottom: 8px; font-size: 1.6rem; font-weight: 800; color: var(--text-main); }
+        .gauge-unit { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); position: absolute; bottom: -8px;}
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            color: transparent !important;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 40px;
+        }
+        body.dark-mode .skeleton {
+            background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+
+        /* Chart */
+        .chart-card { background: var(--surface); padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .chart-title-icon { background: var(--primary-light); color: var(--primary); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        
+        .btn-export {
+            background: var(--primary-light); color: var(--primary); border: none; padding: 8px 16px;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 6px; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-export:hover { background: var(--primary); color: white; }
+
+        .chart-wrapper { position: relative; height: 280px; width: 100%; }
+
+        /* --- Weather Sidebar --- */
+        .weather-sidebar { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-md); border: 1px solid var(--border); height: fit-content; }
+        .w-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .w-hero {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border-radius: var(--radius-md); padding: 30px 20px; color: white;
+            text-align: center; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2); margin-bottom: 20px;
+        }
+        .w-hero::after { content: ''; position: absolute; background: rgba(255, 255, 255, 0.05); width: 150px; height: 150px; border-radius: 50%; top: -40px; right: -40px; }
+        .w-hero-icon { font-size: 3.5rem; line-height: 1; margin-bottom: 12px; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .w-hero-temp { font-size: 3.5rem; font-weight: 800; line-height: 1; margin-bottom: 8px; letter-spacing: -1px; }
+        .w-hero-desc { font-size: 1.1rem; font-weight: 500; opacity: 0.9; }
+        .w-hero-loc { display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 0, 0, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 12px; backdrop-filter: blur(4px); }
+
+        .w-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .w-detail-item { background: var(--bg-body); padding: 14px; border-radius: 12px; border: 1px solid var(--border); }
+        .w-detail-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .w-detail-value { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+
+        /* Forecast Scroll */
+        .forecast-container { border-top: 1px solid var(--border); padding-top: 20px; }
+        .forecast-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
+        .forecast-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 12px; scrollbar-width: none; -ms-overflow-style: none; }
+        .forecast-scroll::-webkit-scrollbar { display: none; }
+        
+        .forecast-item {
+            min-width: 80px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 14px;
+            padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: background 0.2s;
+        }
+        .forecast-item:hover { background: #e2e8f0; }
+
+        .f-time { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
+        .f-icon { font-size: 1.5rem; }
+        .f-temp { font-size: 1rem; font-weight: 800; color: var(--text-main); }
+
+        .footer { text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-layout { display: flex; flex-direction: column; }
+            .banner-group { order: 1; }
+            .weather-sidebar { order: 2; position: static; }
+            .left-panel-content { order: 3; }
+            .w-details-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .glass-header { flex-direction: column; gap: 16px; text-align: center; }
+            .w-details-grid { grid-template-columns: repeat(2, 1fr); }
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="header-title-wrapper">
+                <div class="brand-icon">☀️</div>
+                <div>
+                    <h1>SOLAR-POWERED WEATHER &amp; AIR QUALITY STATION</h1>
+                    <div class="subtitle">Smart Environmental Monitoring Dashboard</div>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌙</button>
+                <div class="status" id="status"><span class="status-dot"></span> Connecting...</div>
+            </div>
+        </header>
+
+        <div class="dashboard-layout">
+            <!-- Banners -->
+            <div class="banner-group">
+                <div class="banner greeting-banner">
+                    <div class="greeting-icon" id="greetingIcon">👋</div>
+                    <div class="greeting-text" id="greetingText">System is syncing data...</div>
+                </div>
+                <div id="alert-box" class="banner alert-banner">WAITING FOR DATA...</div>
+            </div>
+
+            <!-- Left content -->
+            <div class="left-panel-content">
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon ic-temp">🌡️</div>
+                            <div class="metric-title">Temperature
+                                <div class="info-btn">?<span class="tooltip-text">Ambient temperature. Ideal comfort range: 22°C – 27°C.</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-value"><span id="temp" class="skeleton">00.0</span><span class="metric-unit">°C</span></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon ic-hum">💧</div>
+                            <div class="metric-title">Humidity
+                                <div class="info-btn">?<span class="tooltip-text">Relative humidity. Optimal: 45%–60%. Too high promotes mold; too low causes dry skin.</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-value"><span id="hum" class="skeleton">00.0</span><span class="metric-unit">%</span></div>
+                    </div>
+
+                    <!-- PM2.5 (Gauge Chart) -->
+                    <div class="metric-card">
+                        <div class="metric-header" style="margin-bottom:0px;">
+                            <div class="metric-icon ic-pm25">🌬️</div>
+                            <div class="metric-title">PM2.5 Dust
+                                <div class="info-btn">?<span class="tooltip-text">Fine particulate matter (&lt;2.5 µm), can enter the bloodstream. Good: &lt;35 µg/m³. Alert: &gt;50 µg/m³.</span></div>
+                            </div>
+                        </div>
+                        <div class="gauge-wrapper">
+                            <canvas id="pm25Gauge" class="gauge-canvas"></canvas>
+                            <div class="gauge-text-val skeleton" id="pm25">--</div>
+                            <div class="gauge-unit">µg/m³</div>
+                        </div>
+                    </div>
+
+                    <!-- AQI (Gauge Chart) -->
+                    <div class="metric-card">
+                        <div class="metric-header" style="margin-bottom:0px;">
+                            <div class="metric-icon ic-aqi">🍃</div>
+                            <div class="metric-title">AQI / Air Quality
+                                <div class="info-btn">?<span class="tooltip-text">Composite Air Quality Index. Lower is safer. Alert threshold: 3 (scale of 1–5).</span></div>
+                            </div>
+                        </div>
+                        <div class="gauge-wrapper">
+                            <canvas id="aqiGauge" class="gauge-canvas"></canvas>
+                            <div class="gauge-text-val skeleton" id="aqi">--</div>
+                            <div class="gauge-unit">Index</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon ic-eco2">☁️</div>
+                            <div class="metric-title">eCO2
+                                <div class="info-btn">?<span class="tooltip-text">Equivalent CO₂ (stuffiness indicator). Well ventilated: &lt;1000 ppm. Stuffy alert: &gt;1000 ppm.</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-value"><span id="eco2" class="skeleton">0000</span><span class="metric-unit">ppm</span></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon ic-tvoc">🧪</div>
+                            <div class="metric-title">TVOC
+                                <div class="info-btn">?<span class="tooltip-text">Total Volatile Organic Compounds (paint, chemicals, odors). Ideal: &lt;220 ppb. Poor/Odour: &gt;660 ppb.</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-value"><span id="tvoc" class="skeleton">0000</span><span class="metric-unit">ppb</span></div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon ic-uv">☀️</div>
+                            <div class="metric-title">UV Index
+                                <div class="info-btn">?<span class="tooltip-text">Ultraviolet radiation index. Below 3: Safe. 3–5: Moderate. Above 8: Very high — avoid direct sun.</span></div>
+                            </div>
+                        </div>
+                        <div class="metric-value"><span id="uv" class="skeleton">00.0</span><span class="metric-unit">Index</span></div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <div class="chart-title-icon">📈</div>
+                            Temperature Chart
+                        </div>
+                        <button class="btn-export" onclick="exportCSV()">
+                            📥 Export CSV
+                        </button>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Weather Sidebar -->
+            <div class="weather-sidebar">
+                <div class="w-header">☁️ Local Weather</div>
+                <div class="w-hero">
+                    <div class="w-hero-icon" id="weatherIcon">⛅</div>
+                    <div class="w-hero-temp"><span id="weatherTemp" class="skeleton">00</span>°C</div>
+                    <div class="w-hero-desc" id="weatherDesc">Loading...</div>
+                    <div class="w-hero-loc">📍 <span id="weatherLocation">--</span></div>
+                </div>
+
+                <div class="w-details-grid">
+                    <div class="w-detail-item">
+                        <div class="w-detail-label">💨 Wind Speed</div>
+                        <div class="w-detail-value"><span id="weatherWind" class="skeleton">00</span></div>
+                    </div>
+                    <div class="w-detail-item">
+                        <div class="w-detail-label">💧 Humidity</div>
+                        <div class="w-detail-value"><span id="weatherHumidity" class="skeleton">00</span></div>
+                    </div>
+                    <div class="w-detail-item">
+                        <div class="w-detail-label">🔽 Pressure</div>
+                        <div class="w-detail-value"><span id="weatherPressure" class="skeleton">0000</span></div>
+                    </div>
+                    <div class="w-detail-item">
+                        <div class="w-detail-label">👁️ Visibility</div>
+                        <div class="w-detail-value"><span id="weatherVisibility" class="skeleton">00</span></div>
+                    </div>
+                </div>
+
+                <div class="forecast-container">
+                    <div class="forecast-title">📅 24-Hour Forecast</div>
+                    <div class="forecast-scroll" id="forecastContainer">
+                        <!-- Forecast items injected via JS -->
+                        <div class="forecast-item"><div class="skeleton">000</div></div>
+                        <div class="forecast-item"><div class="skeleton">000</div></div>
+                        <div class="forecast-item"><div class="skeleton">000</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            🏠 Solar-Powered Weather Station | Auto-updates every 5 seconds
+        </div>
+    </div>
+
+    <script>
+        // === GLOBAL VARIABLES ===
+        var tempHistory = [];
+        var timeLabels = [];
+        var maxDataPoints = 30;
+        
+        var currentTemp = 0, currentHum = 0, currentAQI = 0, currentCO2 = 0, currentPM25 = 0, currentTVOC = 0, currentUV = 0;
+        var currentGlobalWeatherCode = -1; 
+        
+        var currentAdviceMsg = "System is collecting air quality data...";
+        var isDangerAlert = false;
+        var currentDangerMsg = "";
+
+        var tempChart = null;
+        var aqiChartObj = null;
+        var pm25ChartObj = null;
+
+        var userLocation = { lat: 10.7766, lon: 106.6670 }; // TODO: Change to your location coordinates
+
+        // === THEME (DARK MODE) ===
+        function toggleTheme() {
+            var body = document.body;
+            var btn = document.getElementById("themeToggle");
+            if (body.classList.contains("dark-mode")) {
+                body.classList.remove("dark-mode");
+                localStorage.setItem("theme", "light");
+                btn.innerText = "🌙";
+            } else {
+                body.classList.add("dark-mode");
+                localStorage.setItem("theme", "dark");
+                btn.innerText = "☀️";
+            }
+            // Re-render charts after theme change
+            if (tempChart) tempChart.update();
+            if (aqiChartObj) aqiChartObj.update();
+            if (pm25ChartObj) pm25ChartObj.update();
+        }
+
+        (function loadTheme() {
+            var saved = localStorage.getItem("theme");
+            if (saved === "dark") {
+                document.body.classList.add("dark-mode");
+                document.getElementById("themeToggle").innerText = "☀️";
+            }
+        })();
+
+        // === FETCH LOCATION & WEATHER ===
+        function getUserLocation() {
+            fetchWeather();
+        }
+
+        function removeSkeleton(id, val="") {
+            var el = document.getElementById(id);
+            if (el) {
+                el.classList.remove("skeleton");
+                if (val !== "") el.innerText = val;
+            }
+        }
+
+        function fetchWeather() {
+            var url = `https://api.open-meteo.com/v1/forecast?latitude=${userLocation.lat}&longitude=${userLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,visibility&hourly=temperature_2m,weather_code&timezone=Asia/Bangkok`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => updateWeatherUI(data))
+                .catch(error => console.log("Error fetching weather:", error));
+        }
+
+        function updateWeatherUI(data) {
+            var current = data.current;
+            var hourly = data.hourly;
+            var weatherCode = current.weather_code;
+            currentGlobalWeatherCode = weatherCode; 
+            
+            var temp = Math.round(current.temperature_2m);
+            var humidity = current.relative_humidity_2m;
+            var windSpeed = Math.round(current.wind_speed_10m);
+            var pressure = Math.round(current.pressure_msl);
+            var visibility = Math.round(current.visibility / 1000);
+
+            removeSkeleton("weatherTemp", temp);
+            removeSkeleton("weatherWind", windSpeed + " km/h");
+            removeSkeleton("weatherHumidity", humidity + "%");
+            removeSkeleton("weatherPressure", pressure + " mb");
+            removeSkeleton("weatherVisibility", visibility + " km");
+
+            document.getElementById("weatherDesc").innerText = getWeatherDescription(weatherCode);
+            document.getElementById("weatherIcon").innerText = getWeatherIcon(weatherCode);
+            document.getElementById("weatherLocation").innerText = "Su Van Hanh Campus";
+
+            updateForecast(hourly); 
+            updateGreeting();       
+        }
+
+        // === GREETING & NOTIFICATION ===
+        function updateGreeting() {
+            var greeting = document.getElementById('greetingText');
+            var icon = document.getElementById('greetingIcon');
+            var hour = new Date().getHours();
+            
+            var timeMsg = '';
+            var timeIcon = '👋';
+            if (hour >= 5 && hour < 11) { timeMsg = 'Good morning! Have an energetic day ahead.'; timeIcon = '🌅'; }
+            else if (hour >= 11 && hour < 14) { timeMsg = 'Happy lunch break!'; timeIcon = '🌤️'; }
+            else if (hour >= 14 && hour < 18) { timeMsg = 'Good afternoon! Keep it up.'; timeIcon = '☕'; }
+            else if (hour >= 18 && hour < 22) { timeMsg = 'Good evening! Time to relax.'; timeIcon = '🌆'; }
+            else { timeMsg = 'It\'s late — good night and sleep well!'; timeIcon = '🌙'; }
+
+            greeting.innerHTML = `<strong>${timeMsg}</strong>`;
+            icon.innerText = timeIcon;
+
+            var adviceMsg = currentAdviceMsg;
+            if (currentGlobalWeatherCode !== -1) {
+                if (currentGlobalWeatherCode >= 51 && currentGlobalWeatherCode <= 67) {
+                    adviceMsg = 'Rain likely today 🌧️ — remember to bring a raincoat!';
+                } else if (currentGlobalWeatherCode >= 80 && currentGlobalWeatherCode <= 99) {
+                    adviceMsg = 'WARNING: Heavy rain or thunderstorm ⛈️. Limit outdoor activity!';
+                } else if (currentGlobalWeatherCode === 0 || currentGlobalWeatherCode === 1) { 
+                    if (hour >= 9 && hour <= 16) {
+                        adviceMsg = 'Very sunny today 🌞 — wear sun protection!';
+                    } else {
+                        adviceMsg = 'Clear and beautiful weather — perfect for a walk! 🌿';
+                    }
+                } else if (currentGlobalWeatherCode === 2 || currentGlobalWeatherCode === 3) {
+                    adviceMsg = 'Cloudy weather ⛅ — air feels pleasantly cool.';
+                } else if (currentGlobalWeatherCode === 45 || currentGlobalWeatherCode === 48) {
+                    adviceMsg = 'Fog on the road 🌫️. Drive slowly and stay cautious!';
+                }
+            }
+            
+            if (currentPM25 > 50) {
+                adviceMsg = 'Alert: PM2.5 dust very high (' + currentPM25 + ' µg). Turn on air purifier now! 😷';
+            } else if (currentAQI >= 3) {
+                adviceMsg = 'Alert: Indoor air quality is poor (high AQI)! Use air purifier or open a window! ⚠️';
+            } else if (currentCO2 > 1000) { 
+                adviceMsg = 'Room is stuffy (high eCO2). Open a window to let fresh air in! 😮‍💨';
+            }
+
+            currentAdviceMsg = adviceMsg;
+            renderAlertBox(); 
+        }
+
+        function handleAlert(msg) {
+            if (msg.includes("CANH BAO") || msg.includes("O NHIEM") || msg.includes("DANGER")) {
+                isDangerAlert = true;
+                currentDangerMsg = msg;
+            } else {
+                isDangerAlert = false;
+            }
+            renderAlertBox();
+        }
+
+        function renderAlertBox() {
+            var box = document.getElementById("alert-box");
+            if (isDangerAlert) {
+                box.innerText = currentDangerMsg;
+                box.className = "banner alert-banner danger";
+            } else {
+                box.innerText = "💡 Tip: " + currentAdviceMsg;
+                if (currentAdviceMsg.includes("Alert:")) box.className = "banner alert-banner danger";
+                else box.className = "banner alert-banner warning";
+            }
+        }
+
+        // === GAUGE CHARTS ===
+        function getGaugeColor(val, type) {
+            if (type === "AQI") {
+                if (val <= 1) return "#10b981"; // Excellent
+                if (val <= 2) return "#facc15"; // Good
+                if (val <= 3) return "#fb923c"; // Moderate
+                if (val <= 4) return "#ef4444"; // Poor
+                return "#7f1d1d"; // Severe
+            }
+            if (type === "PM25") {
+                if (val <= 12) return "#10b981"; 
+                if (val <= 35) return "#facc15";
+                if (val <= 55) return "#fb923c";
+                if (val <= 150) return "#ef4444";
+                return "#7f1d1d";
+            }
+            return "#4f46e5";
+        }
+
+        function createGauge(ctx, value, maxVal) {
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [value, Math.max(0, maxVal - value)],
+                        backgroundColor: ["#10b981", "rgba(100, 116, 139, 0.2)"],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: -90,
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } },
+                    animation: { duration: 1000, easing: 'easeOutBounce' }
+                }
+            });
+        }
+
+        function updateGauge(chart, val, maxVal, type) {
+            if (!chart) return;
+            chart.data.datasets[0].data = [val, Math.max(0, maxVal - val)];
+            chart.data.datasets[0].backgroundColor[0] = getGaugeColor(val, type);
+            // Update background color for dark mode
+            var isDark = document.body.classList.contains("dark-mode");
+            chart.data.datasets[0].backgroundColor[1] = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(100, 116, 139, 0.1)";
+            chart.update();
+        }
+
+        // === MAIN CHARTS ===
+        function initCharts() {
+            var ctxT = document.getElementById('tempChart').getContext('2d');
+            var gradient = ctxT.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)');
+            gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
+
+            tempChart = new Chart(ctxT, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: tempHistory,
+                        borderColor: '#4f46e5',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#4f46e5',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            grid: { color: (ctx) => document.body.classList.contains("dark-mode") ? 'rgba(255,255,255,0.05)' : '#f1f5f9' },
+                            ticks: { color: '#64748b' }
+                        },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 6 } }
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                }
+            });
+
+            // Init Gauges
+            aqiChartObj = createGauge(document.getElementById('aqiGauge').getContext('2d'), 0, 5);
+            pm25ChartObj = createGauge(document.getElementById('pm25Gauge').getContext('2d'), 0, 150);
+        }
+
+        function addTempData(temp) {
+            var now = new Date();
+            var timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            tempHistory.push(parseFloat(temp));
+            timeLabels.push(timeStr);
+
+            if (tempHistory.length > maxDataPoints) { tempHistory.shift(); timeLabels.shift(); }
+            if (tempChart) { tempChart.update('none'); }
+        }
+
+        // === MQTT LOGIC ===
+        // TODO: Replace credentials below with your own broker settings.
+        //       Do not commit real credentials to a public repository.
+        var mqtt_server = "e35ff2a8c16f4c60981704de63982340.s1.eu.hivemq.cloud";
+        var mqtt_port = 8884;
+        var client = new Paho.MQTT.Client(mqtt_server, mqtt_port, "Web_" + new Date().getTime());
+
+        client.onConnectionLost = function(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connection Lost`;
+                document.getElementById("status").className = "status warning";
+            }
+        };
+
+        client.onMessageArrived = function(message) {
+            var topic = message.destinationName;
+            var msg = message.payloadString;
+
+            if (topic.includes("temp")) {
+                removeSkeleton("temp", msg);
+                currentTemp = parseFloat(msg);
+                addTempData(msg); updateGreeting();
+            }
+            else if (topic.includes("hum")) {
+                removeSkeleton("hum", msg);
+                currentHum = parseFloat(msg); updateGreeting();
+            }
+            else if (topic.includes("pm25")) {
+                removeSkeleton("pm25", msg);
+                currentPM25 = parseFloat(msg);
+                updateGauge(pm25ChartObj, currentPM25, 150, "PM25");
+                updateGreeting();
+            }
+            else if (topic.includes("aqi")) {
+                removeSkeleton("aqi", msg);
+                currentAQI = parseInt(msg);
+                updateGauge(aqiChartObj, currentAQI, 5, "AQI");
+                updateGreeting();
+            }
+            else if (topic.includes("eco2")) {
+                removeSkeleton("eco2", msg);
+                currentCO2 = parseInt(msg); updateGreeting();
+            }
+            else if (topic.includes("tvoc")) {
+                removeSkeleton("tvoc", msg); 
+                currentTVOC = parseFloat(msg) || 0;
+                updateGreeting();
+            }
+            else if (topic.includes("uv")) {
+                removeSkeleton("uv", msg);
+                currentUV = parseFloat(msg) || 0;
+                updateGreeting();
+            }
+            else if (topic.includes("alert")) {
+                handleAlert(msg);
+            }
+        };
+
+        console.log("Connecting to HiveMQ...");
+        client.connect({
+            useSSL: true, userName: "Huflit", password: "Huflit123456",
+            onSuccess: function() {
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connected`;
+                document.getElementById("status").className = "status connected";
+                initCharts();
+                client.subscribe("simon_house/air/#");
+            },
+            onFailure: function() {
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connection Failed`;
+                document.getElementById("status").className = "status disconnected";
+            }
+        });
+
+        // === LONG-TERM DATA STORAGE (7 DAYS) IN LOCAL STORAGE ===
+        function savePeriodicData() {
+            if (currentTemp === 0 && currentHum === 0) return; // Wait for real sensor data before saving
+            
+            let rawStr = localStorage.getItem("sensor_history_7d");
+            let history = rawStr ? JSON.parse(rawStr) : [];
+            let now = new Date();
+            
+            // Remove data older than 7 days
+            let cutoff = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+            history = history.filter(item => item.timestamp >= cutoff);
+            
+            history.push({
+                timestamp: now.getTime(),
+                timeStr: String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear() + ' ' + 
+                         String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+                temp: currentTemp,
+                hum: currentHum,
+                pm25: currentPM25,
+                aqi: currentAQI,
+                eco2: currentCO2,
+                tvoc: currentTVOC,
+                uv: currentUV
+            });
+            
+            try {
+                localStorage.setItem("sensor_history_7d", JSON.stringify(history));
+            } catch (e) {
+                console.log("Storage full, trimming oldest 20% of data...", e);
+                // On storage error (e.g. quota exceeded), trim oldest 20% of records
+                history.splice(0, Math.floor(history.length * 0.2));
+                try { localStorage.setItem("sensor_history_7d", JSON.stringify(history)); } catch (err) {}
+            }
+        }
+
+        // First save after 10 seconds (allow data to load), then repeat every 1 minute
+        setTimeout(savePeriodicData, 10000);
+        setInterval(savePeriodicData, 60000);
+
+        // === CSV EXPORT ===
+        function exportCSV() {
+            var rawStr = localStorage.getItem("sensor_history_7d");
+            var history = rawStr ? JSON.parse(rawStr) : [];
+
+            if (history.length === 0) {
+                alert("Not enough data to export yet. The system needs at least 1 minute of data to be stored in your browser before exporting.");
+                return;
+            }
+            
+            // Use BOM (\uFEFF) so Excel opens the file with correct encoding and column separation
+            let csvData = "\uFEFF";
+            csvData += "Timestamp,Temperature (°C),Humidity (%),PM2.5 Dust (µg/m³),AQI (Index),eCO2 (ppm),TVOC (ppb),UV Index\n";
+            
+            for (let i = 0; i < history.length; i++) {
+                let h = history[i];
+                csvData += `"${h.timeStr}",${h.temp},${h.hum},${h.pm25},${h.aqi},${h.eco2},${h.tvoc},${h.uv || 0}\n`;
+            }
+            
+            var blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+            
+            var link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Air_Quality_Report_" + new Date().toLocaleDateString("en-CA").replace(/\//g, "-") + ".csv");
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Helpers ---
+        function updateForecast(hourly) {
+            var container = document.getElementById("forecastContainer");
+            container.innerHTML = "";
+            var now = new Date();
+            var count = 0;
+            // Get next 24 hourly time slots
+            for (var i = 0; i < hourly.time.length; i++) {
+                var pTime = new Date(hourly.time[i]);
+                // Only show from current hour onwards
+                if (pTime >= now || (pTime.getHours() === now.getHours() && pTime.getDate() === now.getDate())) {
+                    if (count >= 24) break; // Show next 24 hours
+                    
+                    var temp = hourly.temperature_2m[i]; 
+                    var code = hourly.weather_code[i];
+                    var hourStr = pTime.getHours().toString().padStart(2, '0') + ':00';
+                    var dayLabel = (pTime.getDate() !== now.getDate() && pTime.getHours() === 0) ? "Tomorrow" : hourStr;
+                    
+                    var div = document.createElement("div"); div.className = "forecast-item";
+                    div.innerHTML = `<div class="f-time" style="text-align:center">${dayLabel}</div><div class="f-icon" style="margin: 4px 0;">${getWeatherIcon(code)}</div><div class="f-temp">${Math.round(temp)}°C</div>`;
+                    container.appendChild(div);
+                    count++;
+                }
+            }
+        }
+        function getWeatherIcon(code) {
+            if (code===0) return "☀️"; if (code===1||code===2) return "🌤️"; if (code===3) return "☁️";
+            if (code===45||code===48) return "🌫️"; if (code>=51&&code<=67) return "🌧️";
+            if (code>=71&&code<=77||code===85||code===86) return "❄️"; 
+            if (code>=80&&code<=82||code===95||code===96||code===99) return "⛈️"; return "🌥️";
+        }
+        function getWeatherDescription(code) {
+            if (code===0) return "Clear sky"; if (code===1||code===2) return "Partly cloudy";
+            if (code===3) return "Overcast"; if (code===45||code===48) return "Foggy";
+            if (code>=51&&code<=67) return "Drizzle / Rain"; if (code>=71&&code<=77||code===85||code===86) return "Snow";
+            if (code>=80&&code<=82) return "Rain showers"; if (code===95||code===96||code===99) return "Thunderstorm"; return "Variable";
+        }
+
+        updateGreeting();
+        getUserLocation();
+    </script>
+</body>
+</html>

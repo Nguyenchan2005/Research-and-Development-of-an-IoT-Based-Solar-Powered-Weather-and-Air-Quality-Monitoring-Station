@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trạm Đo Thời Tiết Dùng Pin Mặt Trời - Simon House</title>
+    <title>Solar-Powered Weather &amp; Air Quality Station — Dashboard</title>
     <!-- fonts & icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -290,14 +290,14 @@
             <div class="header-title-wrapper">
                 <div class="brand-icon">☀️</div>
                 <div>
-                    <h1>TRẠM ĐO THỜI TIẾT DÙNG PIN MẶT TRỜI</h1>
-                    <div class="subtitle">Simon House Smart Dashboard</div>
+                    <h1>SOLAR-POWERED WEATHER &amp; AIR QUALITY STATION</h1>
+                    <div class="subtitle">Smart Environmental Monitoring Dashboard</div>
                 </div>
             </div>
             
             <div class="header-controls">
-                <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Chế độ Tối/Sáng">🌙</button>
-                <div class="status" id="status"><span class="status-dot"></span> Đang kết nối...</div>
+                <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌙</button>
+                <div class="status" id="status"><span class="status-dot"></span> Connecting...</div>
             </div>
         </header>
 
@@ -306,9 +306,9 @@
             <div class="banner-group">
                 <div class="banner greeting-banner">
                     <div class="greeting-icon" id="greetingIcon">👋</div>
-                    <div class="greeting-text" id="greetingText">Hệ thống đang đồng bộ dữ liệu...</div>
+                    <div class="greeting-text" id="greetingText">System is syncing data...</div>
                 </div>
-                <div id="alert-box" class="banner alert-banner">ĐANG CHỜ DỮ LIỆU...</div>
+                <div id="alert-box" class="banner alert-banner">WAITING FOR DATA...</div>
             </div>
 
             <!-- Left content -->
@@ -318,8 +318,8 @@
                     <div class="metric-card">
                         <div class="metric-header">
                             <div class="metric-icon ic-temp">🌡️</div>
-                            <div class="metric-title">Nhiệt độ
-                                <div class="info-btn">?<span class="tooltip-text">Nhiệt độ môi trường. Mức thoải mái lý tưởng là từ 22°C - 27°C.</span></div>
+                            <div class="metric-title">Temperature
+                                <div class="info-btn">?<span class="tooltip-text">Ambient temperature. Ideal comfort range: 22°C – 27°C.</span></div>
                             </div>
                         </div>
                         <div class="metric-value"><span id="temp" class="skeleton">00.0</span><span class="metric-unit">°C</span></div>
@@ -328,8 +328,8 @@
                     <div class="metric-card">
                         <div class="metric-header">
                             <div class="metric-icon ic-hum">💧</div>
-                            <div class="metric-title">Độ ẩm
-                                <div class="info-btn">?<span class="tooltip-text">Độ ẩm không khí. Tối ưu: 45% - 60%. Cao quá dễ sinh nấm mốc, thấp quá gây khô da.</span></div>
+                            <div class="metric-title">Humidity
+                                <div class="info-btn">?<span class="tooltip-text">Relative humidity. Optimal: 45%–60%. Too high promotes mold; too low causes dry skin.</span></div>
                             </div>
                         </div>
                         <div class="metric-value"><span id="hum" class="skeleton">00.0</span><span class="metric-unit">%</span></div>
@@ -339,8 +339,8 @@
                     <div class="metric-card">
                         <div class="metric-header" style="margin-bottom:0px;">
                             <div class="metric-icon ic-pm25">🌬️</div>
-                            <div class="metric-title">Bụi PM2.5
-                                <div class="info-btn">?<span class="tooltip-text">Bụi siêu mịn (<2.5 micromet), có thể lọt vào máu. Tốt: < 35 µg/m³. Báo động: > 50 µg/m³.</span></div>
+                            <div class="metric-title">PM2.5 Dust
+                                <div class="info-btn">?<span class="tooltip-text">Fine particulate matter (&lt;2.5 µm), can enter the bloodstream. Good: &lt;35 µg/m³. Alert: &gt;50 µg/m³.</span></div>
                             </div>
                         </div>
                         <div class="gauge-wrapper">
@@ -354,8 +354,8 @@
                     <div class="metric-card">
                         <div class="metric-header" style="margin-bottom:0px;">
                             <div class="metric-icon ic-aqi">🍃</div>
-                            <div class="metric-title">AQI / Không khí
-                                <div class="info-btn">?<span class="tooltip-text">Chỉ số Chất lượng Không khí tổng hợp. Càng thấp càng an toàn. Mức bắt đầu báo động: 3 (Thang điểm 5).</span></div>
+                            <div class="metric-title">AQI / Air Quality
+                                <div class="info-btn">?<span class="tooltip-text">Composite Air Quality Index. Lower is safer. Alert threshold: 3 (scale of 1–5).</span></div>
                             </div>
                         </div>
                         <div class="gauge-wrapper">
@@ -369,7 +369,7 @@
                         <div class="metric-header">
                             <div class="metric-icon ic-eco2">☁️</div>
                             <div class="metric-title">eCO2
-                                <div class="info-btn">?<span class="tooltip-text">Mức độ ngột ngạt (Khí Cacbonic). Thông gió tốt: < 1000 ppm. Cảnh báo ngột ngạt: > 1000 ppm.</span></div>
+                                <div class="info-btn">?<span class="tooltip-text">Equivalent CO₂ (stuffiness indicator). Well ventilated: &lt;1000 ppm. Stuffy alert: &gt;1000 ppm.</span></div>
                             </div>
                         </div>
                         <div class="metric-value"><span id="eco2" class="skeleton">0000</span><span class="metric-unit">ppm</span></div>
@@ -379,7 +379,7 @@
                         <div class="metric-header">
                             <div class="metric-icon ic-tvoc">🧪</div>
                             <div class="metric-title">TVOC
-                                <div class="info-btn">?<span class="tooltip-text">Hữu cơ bay hơi (Mùi sơn, rác, hóa chất...). Lý tưởng: < 220 ppb. Kém/Có mùi lạ: > 660 ppb.</span></div>
+                                <div class="info-btn">?<span class="tooltip-text">Total Volatile Organic Compounds (paint, chemicals, odors). Ideal: &lt;220 ppb. Poor/Odour: &gt;660 ppb.</span></div>
                             </div>
                         </div>
                         <div class="metric-value"><span id="tvoc" class="skeleton">0000</span><span class="metric-unit">ppb</span></div>
@@ -388,8 +388,8 @@
                     <div class="metric-card">
                         <div class="metric-header">
                             <div class="metric-icon ic-uv">☀️</div>
-                            <div class="metric-title">Chỉ số UV
-                                <div class="info-btn">?<span class="tooltip-text">Tia cực tím. Dưới 3: An toàn. Từ 3-5: Trung bình. Trên 8: Rất cao, nên tránh trực tiếp dưới nắng.</span></div>
+                            <div class="metric-title">UV Index
+                                <div class="info-btn">?<span class="tooltip-text">Ultraviolet radiation index. Below 3: Safe. 3–5: Moderate. Above 8: Very high — avoid direct sun.</span></div>
                             </div>
                         </div>
                         <div class="metric-value"><span id="uv" class="skeleton">00.0</span><span class="metric-unit">Index</span></div>
@@ -401,10 +401,10 @@
                     <div class="chart-header">
                         <div class="chart-title">
                             <div class="chart-title-icon">📈</div>
-                            Biểu đồ Nhiệt độ
+                            Temperature Chart
                         </div>
                         <button class="btn-export" onclick="exportCSV()">
-                            📥 Xuất CSV
+                            📥 Export CSV
                         </button>
                     </div>
                     <div class="chart-wrapper">
@@ -415,35 +415,35 @@
 
             <!-- Right Panel: Weather Sidebar -->
             <div class="weather-sidebar">
-                <div class="w-header">☁️ Thời tiết khu vực</div>
+                <div class="w-header">☁️ Local Weather</div>
                 <div class="w-hero">
                     <div class="w-hero-icon" id="weatherIcon">⛅</div>
                     <div class="w-hero-temp"><span id="weatherTemp" class="skeleton">00</span>°C</div>
-                    <div class="w-hero-desc" id="weatherDesc">Đang tải...</div>
+                    <div class="w-hero-desc" id="weatherDesc">Loading...</div>
                     <div class="w-hero-loc">📍 <span id="weatherLocation">--</span></div>
                 </div>
 
                 <div class="w-details-grid">
                     <div class="w-detail-item">
-                        <div class="w-detail-label">💨 Tốc độ gió</div>
+                        <div class="w-detail-label">💨 Wind Speed</div>
                         <div class="w-detail-value"><span id="weatherWind" class="skeleton">00</span></div>
                     </div>
                     <div class="w-detail-item">
-                        <div class="w-detail-label">💧 Độ ẩm</div>
+                        <div class="w-detail-label">💧 Humidity</div>
                         <div class="w-detail-value"><span id="weatherHumidity" class="skeleton">00</span></div>
                     </div>
                     <div class="w-detail-item">
-                        <div class="w-detail-label">🔽 Áp suất</div>
+                        <div class="w-detail-label">🔽 Pressure</div>
                         <div class="w-detail-value"><span id="weatherPressure" class="skeleton">0000</span></div>
                     </div>
                     <div class="w-detail-item">
-                        <div class="w-detail-label">👁️ Tầm nhìn</div>
+                        <div class="w-detail-label">👁️ Visibility</div>
                         <div class="w-detail-value"><span id="weatherVisibility" class="skeleton">00</span></div>
                     </div>
                 </div>
 
                 <div class="forecast-container">
-                    <div class="forecast-title">📅 Dự báo 24h tới</div>
+                    <div class="forecast-title">📅 24-Hour Forecast</div>
                     <div class="forecast-scroll" id="forecastContainer">
                         <!-- Forecast items injected via JS -->
                         <div class="forecast-item"><div class="skeleton">000</div></div>
@@ -456,12 +456,12 @@
 
         <!-- Footer -->
         <div class="footer">
-            🏠 Simon House Smart Air Monitoring | Tự động cập nhật mỗi 5 giây
+            🏠 Solar-Powered Weather Station | Auto-updates every 5 seconds
         </div>
     </div>
 
     <script>
-        // === BIẾN TOÀN CỤC ===
+        // === GLOBAL VARIABLES ===
         var tempHistory = [];
         var timeLabels = [];
         var maxDataPoints = 30;
@@ -469,7 +469,7 @@
         var currentTemp = 0, currentHum = 0, currentAQI = 0, currentCO2 = 0, currentPM25 = 0, currentTVOC = 0, currentUV = 0;
         var currentGlobalWeatherCode = -1; 
         
-        var currentAdviceMsg = "Hệ thống đang thu thập dữ liệu về không khí...";
+        var currentAdviceMsg = "System is collecting air quality data...";
         var isDangerAlert = false;
         var currentDangerMsg = "";
 
@@ -477,9 +477,9 @@
         var aqiChartObj = null;
         var pm25ChartObj = null;
 
-        var userLocation = { lat: 10.7766, lon: 106.6670 }; // Khu vực Cơ sở Sư Vạn Hạnh
+        var userLocation = { lat: 10.7766, lon: 106.6670 }; // TODO: Change to your location coordinates
 
-        // === CĂN BẢN (DARK MODE) ===
+        // === THEME (DARK MODE) ===
         function toggleTheme() {
             var body = document.body;
             var btn = document.getElementById("themeToggle");
@@ -492,7 +492,7 @@
                 localStorage.setItem("theme", "dark");
                 btn.innerText = "☀️";
             }
-            // Cập nhật biểu diễn chart lại sau khi đổi màu
+            // Re-render charts after theme change
             if (tempChart) tempChart.update();
             if (aqiChartObj) aqiChartObj.update();
             if (pm25ChartObj) pm25ChartObj.update();
@@ -506,7 +506,7 @@
             }
         })();
 
-        // === LẤY VỊ TRÍ & THỜI TIẾT ===
+        // === FETCH LOCATION & WEATHER ===
         function getUserLocation() {
             fetchWeather();
         }
@@ -524,7 +524,7 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => updateWeatherUI(data))
-                .catch(error => console.log("Lỗi lấy thời tiết:", error));
+                .catch(error => console.log("Error fetching weather:", error));
         }
 
         function updateWeatherUI(data) {
@@ -547,13 +547,13 @@
 
             document.getElementById("weatherDesc").innerText = getWeatherDescription(weatherCode);
             document.getElementById("weatherIcon").innerText = getWeatherIcon(weatherCode);
-            document.getElementById("weatherLocation").innerText = "Cơ sở Sư Vạn Hạnh";
+            document.getElementById("weatherLocation").innerText = "Su Van Hanh Campus";
 
             updateForecast(hourly); 
             updateGreeting();       
         }
 
-        // === LỜI CHÀO VÀ THÔNG BÁO ===
+        // === GREETING & NOTIFICATION ===
         function updateGreeting() {
             var greeting = document.getElementById('greetingText');
             var icon = document.getElementById('greetingIcon');
@@ -561,11 +561,11 @@
             
             var timeMsg = '';
             var timeIcon = '👋';
-            if (hour >= 5 && hour < 11) { timeMsg = 'Chào buổi sáng! Một ngày đầy năng lượng nhé.'; timeIcon = '🌅'; }
-            else if (hour >= 11 && hour < 14) { timeMsg = 'Buổi trưa vui vẻ nha!'; timeIcon = '🌤️'; }
-            else if (hour >= 14 && hour < 18) { timeMsg = 'Chào buổi chiều! Cố lên nhé.'; timeIcon = '☕'; }
-            else if (hour >= 18 && hour < 22) { timeMsg = 'Chào buổi tối! Dành thời gian thư giãn nhé.'; timeIcon = '🌆'; }
-            else { timeMsg = 'Đã khuya rồi, chúc bạn ngủ ngon!'; timeIcon = '🌙'; }
+            if (hour >= 5 && hour < 11) { timeMsg = 'Good morning! Have an energetic day ahead.'; timeIcon = '🌅'; }
+            else if (hour >= 11 && hour < 14) { timeMsg = 'Happy lunch break!'; timeIcon = '🌤️'; }
+            else if (hour >= 14 && hour < 18) { timeMsg = 'Good afternoon! Keep it up.'; timeIcon = '☕'; }
+            else if (hour >= 18 && hour < 22) { timeMsg = 'Good evening! Time to relax.'; timeIcon = '🌆'; }
+            else { timeMsg = 'It\'s late — good night and sleep well!'; timeIcon = '🌙'; }
 
             greeting.innerHTML = `<strong>${timeMsg}</strong>`;
             icon.innerText = timeIcon;
@@ -573,28 +573,28 @@
             var adviceMsg = currentAdviceMsg;
             if (currentGlobalWeatherCode !== -1) {
                 if (currentGlobalWeatherCode >= 51 && currentGlobalWeatherCode <= 67) {
-                    adviceMsg = 'Hôm nay trời có khả năng mưa 🌧️, nhớ mang áo mưa nhé!';
+                    adviceMsg = 'Rain likely today 🌧️ — remember to bring a raincoat!';
                 } else if (currentGlobalWeatherCode >= 80 && currentGlobalWeatherCode <= 99) {
-                    adviceMsg = 'CẢNH BÁO: Đang có mưa to hoặc giông bão ⛈️. Hạn chế ra đường!';
+                    adviceMsg = 'WARNING: Heavy rain or thunderstorm ⛈️. Limit outdoor activity!';
                 } else if (currentGlobalWeatherCode === 0 || currentGlobalWeatherCode === 1) { 
                     if (hour >= 9 && hour <= 16) {
-                        adviceMsg = 'Hôm nay trời nắng rất gắt 🌞, nhớ mặc áo khoác nhé!';
+                        adviceMsg = 'Very sunny today 🌞 — wear sun protection!';
                     } else {
-                        adviceMsg = 'Thời tiết quang đãng rất đẹp, lý tưởng để đi dạo! 🌿';
+                        adviceMsg = 'Clear and beautiful weather — perfect for a walk! 🌿';
                     }
                 } else if (currentGlobalWeatherCode === 2 || currentGlobalWeatherCode === 3) {
-                    adviceMsg = 'Thời tiết nhiều mây ⛅, không khí khá mát mẻ dễ chịu.';
+                    adviceMsg = 'Cloudy weather ⛅ — air feels pleasantly cool.';
                 } else if (currentGlobalWeatherCode === 45 || currentGlobalWeatherCode === 48) {
-                    adviceMsg = 'Ngoài đường đang có sương mù 🌫️. Lái xe chậm & cẩn thận nhé!';
+                    adviceMsg = 'Fog on the road 🌫️. Drive slowly and stay cautious!';
                 }
             }
             
             if (currentPM25 > 50) {
-                adviceMsg = 'Báo động: Bụi PM2.5 rất cao (' + currentPM25 + ' µg). Bật ngay máy lọc không khí! 😷';
+                adviceMsg = 'Alert: PM2.5 dust very high (' + currentPM25 + ' µg). Turn on air purifier now! 😷';
             } else if (currentAQI >= 3) {
-                adviceMsg = 'Báo động: Không khí phòng đang kém (AQI cao)! Bật lọc khí hoặc mở cửa sổ! ⚠️';
+                adviceMsg = 'Alert: Indoor air quality is poor (high AQI)! Use air purifier or open a window! ⚠️';
             } else if (currentCO2 > 1000) { 
-                adviceMsg = 'Phòng đang ngột ngạt (eCO2 cao). Mở cửa để cấp thêm Oxy nhé! 😮‍💨';
+                adviceMsg = 'Room is stuffy (high eCO2). Open a window to let fresh air in! 😮‍💨';
             }
 
             currentAdviceMsg = adviceMsg;
@@ -617,13 +617,13 @@
                 box.innerText = currentDangerMsg;
                 box.className = "banner alert-banner danger";
             } else {
-                box.innerText = "💡 Lời nhắc: " + currentAdviceMsg;
-                if (currentAdviceMsg.includes("Báo động")) box.className = "banner alert-banner danger";
+                box.innerText = "💡 Tip: " + currentAdviceMsg;
+                if (currentAdviceMsg.includes("Alert:")) box.className = "banner alert-banner danger";
                 else box.className = "banner alert-banner warning";
             }
         }
 
-        // === CHART GAUGE (ĐỒNG HỒ) ===
+        // === GAUGE CHARTS ===
         function getGaugeColor(val, type) {
             if (type === "AQI") {
                 if (val <= 1) return "#10b981"; // Excellent
@@ -669,13 +669,13 @@
             if (!chart) return;
             chart.data.datasets[0].data = [val, Math.max(0, maxVal - val)];
             chart.data.datasets[0].backgroundColor[0] = getGaugeColor(val, type);
-            // Cập nhật background nếu dark mode
+            // Update background color for dark mode
             var isDark = document.body.classList.contains("dark-mode");
             chart.data.datasets[0].backgroundColor[1] = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(100, 116, 139, 0.1)";
             chart.update();
         }
 
-        // === BIỂU ĐỒ CHÍNH ===
+        // === MAIN CHARTS ===
         function initCharts() {
             var ctxT = document.getElementById('tempChart').getContext('2d');
             var gradient = ctxT.createLinearGradient(0, 0, 0, 300);
@@ -687,7 +687,7 @@
                 data: {
                     labels: timeLabels,
                     datasets: [{
-                        label: 'Nhiệt độ (°C)',
+                        label: 'Temperature (°C)',
                         data: tempHistory,
                         borderColor: '#4f46e5',
                         backgroundColor: gradient,
@@ -732,13 +732,15 @@
         }
 
         // === MQTT LOGIC ===
+        // TODO: Replace credentials below with your own broker settings.
+        //       Do not commit real credentials to a public repository.
         var mqtt_server = "e35ff2a8c16f4c60981704de63982340.s1.eu.hivemq.cloud";
         var mqtt_port = 8884;
         var client = new Paho.MQTT.Client(mqtt_server, mqtt_port, "Web_" + new Date().getTime());
 
         client.onConnectionLost = function(responseObject) {
             if (responseObject.errorCode !== 0) {
-                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Mất kết nối`;
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connection Lost`;
                 document.getElementById("status").className = "status warning";
             }
         };
@@ -787,30 +789,30 @@
             }
         };
 
-        console.log("Đang kết nối đến HiveMQ...");
+        console.log("Connecting to HiveMQ...");
         client.connect({
             useSSL: true, userName: "Huflit", password: "Huflit123456",
             onSuccess: function() {
-                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Đã kết nối`;
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connected`;
                 document.getElementById("status").className = "status connected";
                 initCharts();
                 client.subscribe("simon_house/air/#");
             },
             onFailure: function() {
-                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Lỗi kết nối`;
+                document.getElementById("status").innerHTML = `<span class="status-dot"></span> Connection Failed`;
                 document.getElementById("status").className = "status disconnected";
             }
         });
 
-        // === LƯU DỮ LIỆU DÀI HẠN (7 NGÀY) VÀO LOCAL STORAGE ===
+        // === LONG-TERM DATA STORAGE (7 DAYS) IN LOCAL STORAGE ===
         function savePeriodicData() {
-            if (currentTemp === 0 && currentHum === 0) return; // Chờ có dữ liệu thực mới lưu
+            if (currentTemp === 0 && currentHum === 0) return; // Wait for real sensor data before saving
             
             let rawStr = localStorage.getItem("sensor_history_7d");
             let history = rawStr ? JSON.parse(rawStr) : [];
             let now = new Date();
             
-            // Xóa dữ liệu cũ hơn 7 ngày
+            // Remove data older than 7 days
             let cutoff = now.getTime() - (7 * 24 * 60 * 60 * 1000);
             history = history.filter(item => item.timestamp >= cutoff);
             
@@ -830,14 +832,14 @@
             try {
                 localStorage.setItem("sensor_history_7d", JSON.stringify(history));
             } catch (e) {
-                console.log("Không thể lưu thêm, bộ nhớ đầy. Đang xóa bớt dữ liệu cũ...", e);
-                // Nếu lưu bị lỗi (ví dụ hết dung lượng LocalStorage), xóa bớt 20% dữ liệu cũ nhất
+                console.log("Storage full, trimming oldest 20% of data...", e);
+                // On storage error (e.g. quota exceeded), trim oldest 20% of records
                 history.splice(0, Math.floor(history.length * 0.2));
                 try { localStorage.setItem("sensor_history_7d", JSON.stringify(history)); } catch (err) {}
             }
         }
 
-        // Lưu lần đầu tiên sau 10 giây (tránh lúc mới mở chưa kịp load), sau đó lặp lại mỗi 1 phút
+        // First save after 10 seconds (allow data to load), then repeat every 1 minute
         setTimeout(savePeriodicData, 10000);
         setInterval(savePeriodicData, 60000);
 
@@ -847,13 +849,13 @@
             var history = rawStr ? JSON.parse(rawStr) : [];
 
             if (history.length === 0) {
-                alert("Chưa có đủ dữ liệu để xuất báo cáo. Hệ thống cần ít nhất khoảng 1 phút ở trên web sau khi có dữ liệu để tự động lưu vào trình duyệt.");
+                alert("Not enough data to export yet. The system needs at least 1 minute of data to be stored in your browser before exporting.");
                 return;
             }
             
-            // Dùng Blob + BOM (\uFEFF) giúp Excel chống lỗi font Tiếng Việt và chia cột đúng chuẩn
+            // Use BOM (\uFEFF) so Excel opens the file with correct encoding and column separation
             let csvData = "\uFEFF";
-            csvData += "Thời gian,Nhiệt độ (°C),Độ ẩm (%),Bụi PM2.5 (µg/m³),AQI (Index),eCO2 (ppm),TVOC (ppb),Chỉ số UV\n";
+            csvData += "Timestamp,Temperature (°C),Humidity (%),PM2.5 Dust (µg/m³),AQI (Index),eCO2 (ppm),TVOC (ppb),UV Index\n";
             
             for (let i = 0; i < history.length; i++) {
                 let h = history[i];
@@ -865,7 +867,7 @@
             
             var link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", "Bao_Cao_Khong_Khi_" + new Date().toLocaleDateString("vi-VN").replace(/\//g, "-") + ".csv");
+            link.setAttribute("download", "Air_Quality_Report_" + new Date().toLocaleDateString("en-CA").replace(/\//g, "-") + ".csv");
             
             document.body.appendChild(link);
             link.click();
@@ -879,17 +881,17 @@
             container.innerHTML = "";
             var now = new Date();
             var count = 0;
-            // Lấy 24 mốc thời gian tiếp theo (Mỗi tiếng 1 ô)
+            // Get next 24 hourly time slots
             for (var i = 0; i < hourly.time.length; i++) {
                 var pTime = new Date(hourly.time[i]);
-                // Chỉ hiển thị từ giờ hiện tại trở đi
+                // Only show from current hour onwards
                 if (pTime >= now || (pTime.getHours() === now.getHours() && pTime.getDate() === now.getDate())) {
-                    if (count >= 24) break; // Hiển thị 24h kế tiếp
+                    if (count >= 24) break; // Show next 24 hours
                     
                     var temp = hourly.temperature_2m[i]; 
                     var code = hourly.weather_code[i];
                     var hourStr = pTime.getHours().toString().padStart(2, '0') + ':00';
-                    var dayLabel = (pTime.getDate() !== now.getDate() && pTime.getHours() === 0) ? "Ngày mai" : hourStr;
+                    var dayLabel = (pTime.getDate() !== now.getDate() && pTime.getHours() === 0) ? "Tomorrow" : hourStr;
                     
                     var div = document.createElement("div"); div.className = "forecast-item";
                     div.innerHTML = `<div class="f-time" style="text-align:center">${dayLabel}</div><div class="f-icon" style="margin: 4px 0;">${getWeatherIcon(code)}</div><div class="f-temp">${Math.round(temp)}°C</div>`;
@@ -905,10 +907,10 @@
             if (code>=80&&code<=82||code===95||code===96||code===99) return "⛈️"; return "🌥️";
         }
         function getWeatherDescription(code) {
-            if (code===0) return "Trời trong xanh"; if (code===1||code===2) return "Quang mây";
-            if (code===3) return "Nhiều mây"; if (code===45||code===48) return "Sương mù";
-            if (code>=51&&code<=67) return "Mưa nhỏ"; if (code>=71&&code<=77||code===85||code===86) return "Tuyết";
-            if (code>=80&&code<=82) return "Mưa rào"; if (code===95||code===96||code===99) return "Giông bão"; return "Trời thay đổi";
+            if (code===0) return "Clear sky"; if (code===1||code===2) return "Partly cloudy";
+            if (code===3) return "Overcast"; if (code===45||code===48) return "Foggy";
+            if (code>=51&&code<=67) return "Drizzle / Rain"; if (code>=71&&code<=77||code===85||code===86) return "Snow";
+            if (code>=80&&code<=82) return "Rain showers"; if (code===95||code===96||code===99) return "Thunderstorm"; return "Variable";
         }
 
         updateGreeting();

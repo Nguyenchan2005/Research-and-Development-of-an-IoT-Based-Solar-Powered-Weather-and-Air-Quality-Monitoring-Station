@@ -1,0 +1,28 @@
+# Arduino / ESP8266 build artifacts
+*.elf
+*.hex
+*.bin
+*.map
+build/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Node.js (future tooling)
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.log
