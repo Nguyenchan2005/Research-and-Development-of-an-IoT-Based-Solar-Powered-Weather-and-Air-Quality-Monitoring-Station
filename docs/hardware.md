@@ -93,6 +93,6 @@ The sensor shield enclosure is a 3D-printed multi-layer structure that protects 
 
 <img src="images/box_01.png" alt="Enclosure — exploded 3D view (perspective 1)" width="480">
 <img src="images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">
-<img src="images/box_03.png" alt="Enclosure — 3D model assembly view (perspective 1)" width="400">
-<img src="images/box_04.png" alt="Enclosure — 3D model assembly view (perspective 2)" width="400">
-<img src="images/box_05.png" alt="Enclosure — 3D model with cross-wind airflow illustration" width="600">
+<img src="images/box_03.png" alt="Enclosure — 3D model assembly view (perspective 1)" width="480">
+<img src="images/box_04.png" alt="Enclosure — 3D model assembly view (perspective 2)" width="480">
+<img src="images/box_05.png" alt="Enclosure — 3D model with cross-wind airflow illustration" width="480">

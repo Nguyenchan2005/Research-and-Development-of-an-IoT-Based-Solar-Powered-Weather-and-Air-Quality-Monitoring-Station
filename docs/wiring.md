@@ -102,6 +102,6 @@ LM2596S Buck Converter (set to 5V output)
 
 ## Actual Wiring Inside Enclosure
 
-The image below shows the internal layer structure of the enclosure, illustrating how components are positioned within the sensor shield assembly.
+The image below shows the exploded layer structure of the sensor shield enclosure, illustrating how the shield layers stack around the sensors.
 
-<img src="images/box_02.png" alt="Enclosure interior — exploded view showing component layers" width="500">
+<img src="images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">

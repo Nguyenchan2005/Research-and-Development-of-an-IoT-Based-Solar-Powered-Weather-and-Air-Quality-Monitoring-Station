@@ -78,9 +78,9 @@ Full specifications are in [`docs/hardware.md`](docs/hardware.md). Wiring diagra
 
 The station is housed in a weatherproof sensor shield enclosure designed for outdoor deployment. The multi-layer structure allows airflow around the sensors while protecting them from direct sunlight and rain.
 
-<img src="docs/images/box_01.png" alt="Sensor shield enclosure — exploded 3D view (front)" width="480">
-<img src="docs/images/box_02.png" alt="Sensor shield enclosure — exploded 3D view (side)" width="480">
-<img src="docs/images/box_05.png" alt="Sensor shield enclosure — 3D model with cross-wind airflow" width="600">
+<img src="docs/images/box_01.png" alt="Enclosure — exploded 3D view (perspective 1)" width="480">
+<img src="docs/images/box_02.png" alt="Enclosure — exploded 3D view (perspective 2)" width="480">
+<img src="docs/images/box_05.png" alt="Enclosure — 3D model with cross-wind airflow illustration" width="480">
 
 See [`docs/hardware.md`](docs/hardware.md) for full enclosure photos and component placement details.
 
